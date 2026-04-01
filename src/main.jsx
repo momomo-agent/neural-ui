@@ -17,6 +17,8 @@ function App() {
   const [intent, setIntent] = useState('');
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState(localStorage.getItem('anthropic_key') || '');
+  const [baseURL, setBaseURL] = useState(localStorage.getItem('base_url') || '');
+  const [model, setModel] = useState(localStorage.getItem('model') || 'claude-sonnet-4-6');
   const [library] = useState(() => new SchemaLibrary());
   const [savedSchemas, setSavedSchemas] = useState([]);
   const [mode, setMode] = useState('component'); // 'component' or 'visual'
@@ -53,11 +55,13 @@ function App() {
     
     setLoading(true);
     try {
-      const newSchema = await generateSchema(intent, apiKey);
+      const newSchema = await generateSchema(intent, apiKey, baseURL, model);
       setSchema(newSchema);
       library.save(intent, newSchema);
       setSavedSchemas(library.list());
       localStorage.setItem('anthropic_key', apiKey);
+      localStorage.setItem('base_url', baseURL);
+      localStorage.setItem('model', model);
     } catch (err) {
       alert('生成失败: ' + err.message);
     } finally {
@@ -145,9 +149,23 @@ function App() {
       <div style={{ marginBottom: 32 }}>
         <input 
           type="password" 
-          placeholder="Anthropic API Key (本地存储)"
+          placeholder="API Key"
           value={apiKey}
           onChange={e => setApiKey(e.target.value)}
+          style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }}
+        />
+        <input 
+          type="text" 
+          placeholder="Base URL (可选，默认 Anthropic)"
+          value={baseURL}
+          onChange={e => setBaseURL(e.target.value)}
+          style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }}
+        />
+        <input 
+          type="text" 
+          placeholder="Model (默认 claude-sonnet-4-6)"
+          value={model}
+          onChange={e => setModel(e.target.value)}
           style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }}
         />
         <input 
